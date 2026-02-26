@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useBoardStore } from "@/app/store/board.store"
+import List from "@/app/components/list/List"
 import "@/app/styles/components/_board.scss"
 
 export default function Board() {
@@ -37,12 +38,9 @@ export default function Board() {
         </h1>
       )}
 
-      {/* ---------- اینجا نمایش لیست‌ها ---------- */}
-      <div className="lists flex gap-4 mt-4">
+      <div className="lists">
         {board.listIds.map((id) => (
-          <div key={id} className="list-placeholder p-2 border rounded">
-            List {id}
-          </div>
+          <List key={id} listId={id} />
         ))}
       </div>
     </div>
