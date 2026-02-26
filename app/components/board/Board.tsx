@@ -20,13 +20,16 @@ import {
 import List from "@/app/components/list/List"
 import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_board.scss"
+import "@/app/styles/components/_list.scss"
+import { FaPen } from "react-icons/fa"
 
 export default function Board() {
-  const { board, lists, cards, updateBoardTitle } = useBoardStore()
+  const { board, lists, updateBoardTitle, addList } = useBoardStore()
 
   const [activeId, setActiveId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [title, setTitle] = useState(board.title || "My Board")
+  const [newListTitle, setNewListTitle] = useState("")
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -64,7 +67,6 @@ export default function Board() {
 
     // === Move cards ===
     let sourceListId: string | undefined
-
     for (const [lid, l] of Object.entries(lists)) {
       if (l.cardIds.includes(activeId)) {
         sourceListId = lid
@@ -123,8 +125,15 @@ export default function Board() {
     }
   }, [board.listIds, lists])
 
+  const handleAddList = () => {
+    if (!newListTitle.trim()) return
+    addList(newListTitle.trim())
+    setNewListTitle("")
+  }
+
   return (
     <div className="board">
+      {/* Board title */}
       {isEditing ? (
         <input
           value={title}
@@ -137,7 +146,7 @@ export default function Board() {
           autoFocus
         />
       ) : (
-        <h1 className="board-title " onClick={() => setIsEditing(true)}>{title}</h1>
+        <h1 className="board-title" onClick={() => setIsEditing(true)}>{title}</h1>
       )}
 
       <DndContext
@@ -154,6 +163,19 @@ export default function Board() {
             {board.listIds.map((id) => (
               <List key={id} listId={id} />
             ))}
+
+            {/* Add List Box */}
+            <div className="list">
+              <div className="add-card">
+                <input
+                  placeholder="+ Add a list..."
+                  value={newListTitle}
+                  onChange={(e) => setNewListTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddList()}
+                />
+                <button onClick={handleAddList}><FaPen size={10} /> Add List</button>
+              </div>
+            </div>
           </div>
         </SortableContext>
 
@@ -161,7 +183,7 @@ export default function Board() {
         <DragOverlay dropAnimation={{ duration: 200 }}>
           {activeId
             ? board.listIds.includes(activeId)
-              ? <List listId={activeId}  />
+              ? <List listId={activeId} />
               : <Card cardId={activeId} isOverlay />
             : null}
         </DragOverlay>
