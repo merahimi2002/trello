@@ -52,6 +52,9 @@ export default function Comment({ cardId, close }: CommentProps) {
             {card.comments.map((comment) => (
               <div key={comment.id} className="comment-item">
                 <p className="comment-text">{comment.text}</p>
+                <span className="comment-date">
+                  {new Date(comment.createdAt).toLocaleString() }
+                </span>
               </div>
             ))}
           </div>
