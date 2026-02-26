@@ -1,0 +1,35 @@
+@use "../variables" as *;
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    .modal-content {
+        background: $white-custome;
+        border-radius: $radius-custome;
+        width: 90%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+    }
+
+    .delete-modal {
+        padding: 20px;
+
+        .delete-actions {
+            display: flex;
+            gap: 20px;
+
+            .cancel-btn {
+                background: darkgreen;
+            }
+        }
+    }
+}

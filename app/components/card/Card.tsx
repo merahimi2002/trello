@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { useBoardStore } from "@/app/store/board.store"
 import { FaRegComments } from "react-icons/fa"
 import "@/app/styles/components/_card.scss"
-import CardModal from "./CardModal"
+import CardModal from "./Comment"
 
 interface CardProps {
   cardId: string

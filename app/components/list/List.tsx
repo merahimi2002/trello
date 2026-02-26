@@ -8,6 +8,7 @@ import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_list.scss"
 import { MdDeleteForever } from "react-icons/md"
 import { FaPen } from "react-icons/fa"
+import DeleteModal from "../DeleteModal"
 
 interface ListProps {
   listId: string
@@ -20,6 +21,8 @@ export default function List({ listId }: ListProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [title, setTitle] = useState(list?.title || "")
   const [newCardTitle, setNewCardTitle] = useState("")
+
+  const [openDelete, setOpenDelete] = useState(false)
 
   const {
     attributes,
@@ -41,7 +44,7 @@ export default function List({ listId }: ListProps) {
 
   return (
     <div ref={setNodeRef} style={style} className="list">
-      
+
       {/* Drag Handle Area */}
       <div
         className="list-header"
@@ -71,7 +74,7 @@ export default function List({ listId }: ListProps) {
           <h3
             className="list-title"
             onClick={(e) => {
-              e.stopPropagation() 
+              e.stopPropagation()
               setIsEditingTitle(true)
             }}
           >
@@ -119,10 +122,22 @@ export default function List({ listId }: ListProps) {
       {/* Delete List */}
       <button
         className="delete-list"
-        onClick={() => removeList(listId)}
+        onClick={() => setOpenDelete(true)}
       >
-       <MdDeleteForever size={15} />  Delete List
+        <MdDeleteForever size={15} /> Delete List
       </button>
+
+      {openDelete && (
+        <DeleteModal
+          title="Delete List"
+          description="Are you sure you want to delete this list? All cards inside will be removed."
+          onCancel={() => setOpenDelete(false)}
+          onConfirm={() => {
+            removeList(listId)
+            setOpenDelete(false)
+          }}
+        />
+      )}
     </div>
   )
 }
