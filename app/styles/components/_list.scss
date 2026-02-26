@@ -1,39 +1,97 @@
+@use "../variables" as *;
+
 .list {
-    background-color: #e2e8f0;
-    border-radius: 8px;
-    padding: 8px;
-    min-width: 220px;
+    background: $second-color;
+    min-width: 300px;
+    padding: 20px;
+    border-radius: $radius-custome;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    cursor: grab;
 
-    .list-title {
-        font-weight: bold;
-        cursor: pointer;
+    &:active {
+        cursor: grabbing;
     }
 
     .list-title-input {
         width: 100%;
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 0 10px;
+        margin: 0 0 15px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: $black-custome;
+        background: inherit;
+        width: fit-content;
+        border: none;
+        outline: none;
     }
 
-    .card {
-        background-color: #fff;
-        padding: 6px 8px;
-        border-radius: 6px;
-        border: 1px solid #bbb;
+    .list-title {
+        width: 100%;
+        padding: 0 10px;
+        margin: 0 0 15px;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: $black-custome;
         cursor: pointer;
+        transition: 0.4s;
+
+        &:hover {
+            color: $first-color;
+        }
+
     }
 
-    .add-card-btn {
-        background-color: #4c00b0;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
+
+    .list-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .add-card {
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        input {
+            padding: 10px;
+            border-radius: $radius-custome;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            width: 70%;
+            padding: 10px;
+            border: none;
+            border-radius: $radius-custome;
+            background: $first-color;
+            color: $white-custome;
+            cursor: pointer;
+            transition: 0.2s ease;
+
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+    }
+
+    button {
+        width: 50%;
+        margin-top: 15px;
+        padding: 10px;
+        border: none;
+        border-radius: $radius-custome;
+        background: darkred;
+        color: $white-custome;
         cursor: pointer;
-        text-align: center;
-        font-size: 0.9rem;
+
+        &:hover {
+            opacity: 0.8;
+        }
     }
 }

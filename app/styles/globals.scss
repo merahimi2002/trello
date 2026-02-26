@@ -1,0 +1,11 @@
+@use "./variables" as *;
+
+body {
+  font-family: sans-serif;
+  font-size: 16px;
+  background: linear-gradient(135deg,
+      $first-color 0%,
+      lighten($first-color, 10%) 40%,
+      lighten($first-color, 20%) 70%);
+  min-height: 100vh;
+}

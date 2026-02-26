@@ -1,16 +1,25 @@
+@use "../variables" as *;
+
 .card {
-  background-color: #fff;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #bbb;
-  cursor: pointer;
-  
-  &.dragging {
-    opacity: 0.5;
+  background: white;
+  padding: 10px 15px;
+  border-radius: $radius-custome;
+  color: $black-custome;
+  font-size: 0.9rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
   }
-  
-  .card-title {
-    font-size: 0.95rem;
-    font-weight: 500;
+
+  &--dragging {
+    opacity: 0.7;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+    border-radius: $radius-custome;
   }
+
 }

@@ -1,14 +1,35 @@
+@use "../variables" as *;
+
 .board {
-  background-color: #f4f4f4;
-  border-radius: 8px;
-  padding: 16px;
+  padding: 20px;
 
   .board-title {
-    margin-bottom: 16px;
+    margin: 0 0 30px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: 0.4s;
+  }
+
+  .board-title:hover {
+    color: $white-custome;
   }
 
   .board-title-input {
+    padding: 0;
+    margin: 0 0 30px;
     font-size: 1.5rem;
-    width: 100%;
+    font-weight: 700;
+    color: white;
+    background: inherit;
+    width: fit-content;
+    border: none;
+    outline: none;
+  }
+
+  .board-lists {
+    display: flex;
+    gap: 20px;
   }
 }
