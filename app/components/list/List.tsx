@@ -6,6 +6,8 @@ import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities"
 import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_list.scss"
+import { MdDeleteForever } from "react-icons/md"
+import { FaPen } from "react-icons/fa"
 
 interface ListProps {
   listId: string
@@ -110,7 +112,7 @@ export default function List({ listId }: ListProps) {
             setNewCardTitle("")
           }}
         >
-          + Add Card
+          <FaPen size={10} /> Add Card
         </button>
       </div>
 
@@ -119,7 +121,7 @@ export default function List({ listId }: ListProps) {
         className="delete-list"
         onClick={() => removeList(listId)}
       >
-        Delete List
+       <MdDeleteForever size={15} />  Delete List
       </button>
     </div>
   )
