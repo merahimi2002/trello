@@ -3,6 +3,11 @@
 import { useState } from "react"
 import { useBoardStore } from "@/app/store/board.store"
 import type { ID } from "@/app/types/board.types"
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable"
 import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_list.scss"
 
@@ -12,15 +17,32 @@ interface ListProps {
 
 export default function List({ listId }: ListProps) {
   const list = useBoardStore((state) => state.lists[listId])
+  const cardIds = useBoardStore((state) => state.lists[listId]?.cardIds ?? [])
+
   const { updateListTitle, removeList, addCard } = useBoardStore()
-  const cards = useBoardStore((state) => state.cards)
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [title, setTitle] = useState(list.title)
+  const [title, setTitle] = useState(list?.title || "")
   const [newCardTitle, setNewCardTitle] = useState("")
 
+  // Make list draggable (sortable column)
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setListRef,
+    transition,
+    isDragging,
+  } = useSortable({ id: listId })
+
+  const listStyle = {
+    transition: isDragging
+      ? 'transform 0.25s ease-out, opacity 0.25s ease-out'
+      : 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease',
+    opacity: isDragging ? 0.8 : 1,
+  }
+
   const handleTitleBlur = () => {
-    updateListTitle(listId, title)
+    if (title.trim()) updateListTitle(listId, title.trim())
     setIsEditingTitle(false)
   }
 
@@ -30,19 +52,25 @@ export default function List({ listId }: ListProps) {
     setNewCardTitle("")
   }
 
+  if (!list) return null
+
   return (
-    <div className="list">
-      {/* List Title */}
+    <div
+      ref={setListRef}
+      style={listStyle}
+      className="list"
+      {...attributes}
+      {...listeners}
+    >
+      {/* List title */}
       {isEditingTitle ? (
         <input
-          className="list-title-input"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleTitleBlur}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleTitleBlur()
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
           autoFocus
+          onPointerDown={(e) => e.stopPropagation()}
         />
       ) : (
         <div className="list-title" onClick={() => setIsEditingTitle(true)}>
@@ -50,34 +78,40 @@ export default function List({ listId }: ListProps) {
         </div>
       )}
 
-      {/* Cards */}
-      <div className="cards flex flex-col gap-2">
-        {list.cardIds.map((cardId) => (
-          <Card key={cardId} cardId={cardId} />
-        ))}
+      {/* Horizontal cards container */}
+      <SortableContext items={cardIds} strategy={horizontalListSortingStrategy}>
+        <div className="cards-container">
+          {cardIds.map((cardId) => (
+            <Card key={cardId} cardId={cardId} />
+          ))}
+        </div>
+      </SortableContext>
+
+      {/* Add new card */}
+      <div className="add-card-section">
+        <input
+          className="new-card-input"
+          placeholder="+ Add a card..."
+          value={newCardTitle}
+          onChange={(e) => setNewCardTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAddCard()}
+          onPointerDown={(e) => e.stopPropagation()}
+        />
+        <button
+          className="add-card-btn"
+          onClick={handleAddCard}
+        >
+          + Add Card
+        </button>
       </div>
 
-      {/* Add New Card */}
-      <input
-        className="list-title-input"
-        placeholder="New card..."
-        value={newCardTitle}
-        onChange={(e) => setNewCardTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleAddCard()
-        }}
-      />
-      <div className="add-card-btn" onClick={handleAddCard}>
-        + Add Card
-      </div>
-
-      {/* Remove List */}
-      <div
-        className="add-card-btn mt-2 bg-red-500"
+      {/* Delete list button */}
+      <button
+        className="delete-list-btn"
         onClick={() => removeList(listId)}
       >
         Delete List
-      </div>
+      </button>
     </div>
   )
 }
