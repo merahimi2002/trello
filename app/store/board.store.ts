@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { nanoid } from "nanoid"
-import type { BoardState, ID } from "../types/board.types"
+import type { BoardState, ID } from "@/app/types/board.types"
 
 interface BoardActions {
   updateBoardTitle: (title: string) => void
