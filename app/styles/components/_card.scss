@@ -1,0 +1,16 @@
+.card {
+  background-color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  
+  &.dragging {
+    opacity: 0.5;
+  }
+  
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+}

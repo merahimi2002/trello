@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useBoardStore } from "@/app/store/board.store"
 import type { ID } from "@/app/types/board.types"
+import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_list.scss"
 
 interface ListProps {
@@ -11,7 +12,8 @@ interface ListProps {
 
 export default function List({ listId }: ListProps) {
   const list = useBoardStore((state) => state.lists[listId])
-  const { updateListTitle, removeList, addCard, cards } = useBoardStore()
+  const { updateListTitle, removeList, addCard } = useBoardStore()
+  const cards = useBoardStore((state) => state.cards)
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [title, setTitle] = useState(list.title)
@@ -30,7 +32,7 @@ export default function List({ listId }: ListProps) {
 
   return (
     <div className="list">
-      {/* Title */}
+      {/* List Title */}
       {isEditingTitle ? (
         <input
           className="list-title-input"
@@ -51,13 +53,11 @@ export default function List({ listId }: ListProps) {
       {/* Cards */}
       <div className="cards flex flex-col gap-2">
         {list.cardIds.map((cardId) => (
-          <div key={cardId} className="card">
-            {cards[cardId].title}
-          </div>
+          <Card key={cardId} cardId={cardId} />
         ))}
       </div>
 
-      {/* Add Card */}
+      {/* Add New Card */}
       <input
         className="list-title-input"
         placeholder="New card..."
