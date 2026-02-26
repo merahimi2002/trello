@@ -4,17 +4,16 @@ import { useState } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useBoardStore } from "@/app/store/board.store"
-import type { ID } from "@/app/types/board.types"
-import CardModal from "./CardModal"
 import "@/app/styles/components/_card.scss"
 
 interface CardProps {
-  cardId: ID
+  cardId: string
+  isOverlay?: boolean
 }
 
-export default function Card({ cardId }: CardProps) {
+export default function Card({ cardId, isOverlay = false }: CardProps) {
   const card = useBoardStore((state) => state.cards[cardId])
-  const [modalOpen, setModalOpen] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const {
     attributes,
@@ -23,41 +22,38 @@ export default function Card({ cardId }: CardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: cardId })
-
-  const dragStyle = {
-    transform: CSS.Transform.toString(transform)
-      ? `${CSS.Transform.toString(transform)} rotate(${isDragging ? '2deg' : '0deg'}) scale(${isDragging ? 1.05 : 1})`
-      : undefined,
-    transition: transition || 'transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease',
-  }
+  } = useSortable({
+    id: cardId,
+    disabled: isOverlay,
+  })
 
   if (!card) return null
 
+  const style = isOverlay
+    ? {
+        transform: "rotate(4deg) scale(1.05)",
+        boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+      }
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition: transition || "transform 200ms ease",
+        opacity: isDragging ? 0.4 : 1, 
+      }
+
   return (
-    <>
-      <div
-        ref={setNodeRef}
-        style={dragStyle}
-        className={`card ${isDragging ? "card--dragging" : ""}`}
-        {...attributes}
-        {...listeners}
-        onClick={(e) => {
-          if (isDragging) return
-          e.stopPropagation()
-          setModalOpen(true)
-        }}
-      >
-        <div className="card__title">{card.title}</div>
-
-        {card.comments?.length > 0 && (
-          <div className="card__comments-count">
-            {card.comments.length} comment{card.comments.length > 1 ? "s" : ""}
-          </div>
-        )}
-      </div>
-
-      {modalOpen && <CardModal cardId={cardId} close={() => setModalOpen(false)} />}
-    </>
+    <div
+      ref={!isOverlay ? setNodeRef : undefined}
+      style={style}
+      className="card"
+      {...(!isOverlay ? attributes : {})}
+      {...(!isOverlay ? listeners : {})}
+      onClick={(e) => {
+        if (isDragging) return
+        e.stopPropagation()
+        setOpen(true)
+      }}
+    >
+      {card.title}
+    </div>
   )
 }

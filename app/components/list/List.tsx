@@ -2,112 +2,121 @@
 
 import { useState } from "react"
 import { useBoardStore } from "@/app/store/board.store"
-import type { ID } from "@/app/types/board.types"
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-  useSortable,
-} from "@dnd-kit/sortable"
+import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_list.scss"
 
 interface ListProps {
-  listId: ID
+  listId: string
 }
 
 export default function List({ listId }: ListProps) {
-  const list = useBoardStore((state) => state.lists[listId])
-  const cardIds = useBoardStore((state) => state.lists[listId]?.cardIds ?? [])
-
+  const list = useBoardStore((s) => s.lists[listId])
   const { updateListTitle, removeList, addCard } = useBoardStore()
 
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [title, setTitle] = useState(list?.title || "")
   const [newCardTitle, setNewCardTitle] = useState("")
 
-  // Make list draggable (sortable column)
   const {
     attributes,
     listeners,
-    setNodeRef: setListRef,
+    setNodeRef,
+    transform,
     transition,
     isDragging,
   } = useSortable({ id: listId })
 
-  const listStyle = {
-    transition: isDragging
-      ? 'transform 0.25s ease-out, opacity 0.25s ease-out'
-      : 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease',
-    opacity: isDragging ? 0.8 : 1,
-  }
-
-  const handleTitleBlur = () => {
-    if (title.trim()) updateListTitle(listId, title.trim())
-    setIsEditingTitle(false)
-  }
-
-  const handleAddCard = () => {
-    if (!newCardTitle.trim()) return
-    addCard(listId, newCardTitle.trim())
-    setNewCardTitle("")
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition || "transform 200ms ease",
+    boxShadow: isDragging ? "0 12px 30px rgba(0,0,0,0.2)" : undefined,
+    opacity: isDragging ? 0.85 : 1,
   }
 
   if (!list) return null
 
   return (
-    <div
-      ref={setListRef}
-      style={listStyle}
-      className="list"
-      {...attributes}
-      {...listeners}
-    >
-      {/* List title */}
-      {isEditingTitle ? (
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={handleTitleBlur}
-          onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
-          autoFocus
-          onPointerDown={(e) => e.stopPropagation()}
-        />
-      ) : (
-        <div className="list-title" onClick={() => setIsEditingTitle(true)}>
-          {list.title}
-        </div>
-      )}
+    <div ref={setNodeRef} style={style} className="list">
+      
+      {/* Drag Handle Area */}
+      <div
+        className="list-header"
+        {...attributes}
+        {...listeners}
+      >
+        {isEditingTitle ? (
+          <input
+            className="list-title-input"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => {
+              if (title.trim()) {
+                updateListTitle(listId, title.trim())
+              }
+              setIsEditingTitle(false)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateListTitle(listId, title.trim())
+                setIsEditingTitle(false)
+              }
+            }}
+            autoFocus
+          />
+        ) : (
+          <h3
+            className="list-title"
+            onClick={(e) => {
+              e.stopPropagation() 
+              setIsEditingTitle(true)
+            }}
+          >
+            {list.title}
+          </h3>
+        )}
+      </div>
 
-      {/* Horizontal cards container */}
-      <SortableContext items={cardIds} strategy={horizontalListSortingStrategy}>
-        <div className="cards-container">
-          {cardIds.map((cardId) => (
+      {/* Cards */}
+      <SortableContext
+        items={list.cardIds}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="list-cards">
+          {list.cardIds.map((cardId) => (
             <Card key={cardId} cardId={cardId} />
           ))}
         </div>
       </SortableContext>
 
-      {/* Add new card */}
-      <div className="add-card-section">
+      {/* Add Card Section */}
+      <div className="add-card">
         <input
-          className="new-card-input"
           placeholder="+ Add a card..."
           value={newCardTitle}
           onChange={(e) => setNewCardTitle(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAddCard()}
-          onPointerDown={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && newCardTitle.trim()) {
+              addCard(listId, newCardTitle.trim())
+              setNewCardTitle("")
+            }
+          }}
         />
         <button
-          className="add-card-btn"
-          onClick={handleAddCard}
+          onClick={() => {
+            if (!newCardTitle.trim()) return
+            addCard(listId, newCardTitle.trim())
+            setNewCardTitle("")
+          }}
         >
           + Add Card
         </button>
       </div>
 
-      {/* Delete list button */}
+      {/* Delete List */}
       <button
-        className="delete-list-btn"
+        className="delete-list"
         onClick={() => removeList(listId)}
       >
         Delete List

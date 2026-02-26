@@ -5,7 +5,9 @@ import { useBoardStore } from "@/app/store/board.store"
 import {
   DndContext,
   DragEndEvent,
-  pointerWithin,
+  DragStartEvent,
+  DragOverlay,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
@@ -16,62 +18,65 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable"
 import List from "@/app/components/list/List"
+import Card from "@/app/components/card/Card"
 import "@/app/styles/components/_board.scss"
 
 export default function Board() {
-  const { board, lists, updateBoardTitle } = useBoardStore()
+  const { board, lists, cards, updateBoardTitle } = useBoardStore()
+
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [title, setTitle] = useState(board.title || "My Board")
 
-  // Custom sensor to prevent accidental drag on small movements
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5, // drag only starts after moving the pointer 5px
-      },
+      activationConstraint: { distance: 6 },
     })
   )
 
-  const handleBlur = () => {
-    updateBoardTitle(title.trim())
-    setIsEditing(false)
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
   }
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
+    setActiveId(null)
+
     if (!over || active.id === over.id) return
 
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Case 1: Reordering lists (columns)
+    // === Reorder lists ===
     if (board.listIds.includes(activeId)) {
       const oldIndex = board.listIds.indexOf(activeId)
       const newIndex = board.listIds.indexOf(overId)
       if (newIndex < 0) return
 
-      const newListIds = arrayMove(board.listIds, oldIndex, newIndex)
-
       useBoardStore.setState((s) => ({
-        board: { ...s.board, listIds: newListIds },
+        board: {
+          ...s.board,
+          listIds: arrayMove(s.board.listIds, oldIndex, newIndex),
+        },
       }))
       return
     }
 
-    // Case 2: Moving a card
+    // === Move cards ===
     let sourceListId: string | undefined
+
     for (const [lid, l] of Object.entries(lists)) {
       if (l.cardIds.includes(activeId)) {
         sourceListId = lid
         break
       }
     }
+
     if (!sourceListId) return
 
     let targetListId = overId
     let insertIndex = lists[targetListId]?.cardIds?.length ?? 0
 
-    // Dropped on another card → find its list and position
     if (!board.listIds.includes(overId)) {
       for (const [lid, l] of Object.entries(lists)) {
         const idx = l.cardIds.indexOf(overId)
@@ -87,30 +92,32 @@ export default function Board() {
     const targetList = lists[targetListId]
 
     if (sourceListId === targetListId) {
-      // Reorder inside the same list
       const oldIndex = sourceList.cardIds.indexOf(activeId)
-      if (oldIndex === insertIndex) return
-
-      const newCardIds = arrayMove(sourceList.cardIds, oldIndex, insertIndex)
-
       useBoardStore.setState((s) => ({
         lists: {
           ...s.lists,
-          [sourceListId]: { ...sourceList, cardIds: newCardIds },
+          [sourceListId]: {
+            ...sourceList,
+            cardIds: arrayMove(sourceList.cardIds, oldIndex, insertIndex),
+          },
         },
       }))
     } else {
-      // Move card to another list
-      const newSourceIds = sourceList.cardIds.filter(id => id !== activeId)
-
-      const newTargetIds = [...(targetList?.cardIds || [])]
-      newTargetIds.splice(insertIndex, 0, activeId)
-
       useBoardStore.setState((s) => ({
         lists: {
           ...s.lists,
-          [sourceListId]: { ...sourceList, cardIds: newSourceIds },
-          [targetListId]: { ...(targetList || { title: "", cardIds: [] }), cardIds: newTargetIds },
+          [sourceListId]: {
+            ...sourceList,
+            cardIds: sourceList.cardIds.filter(id => id !== activeId),
+          },
+          [targetListId]: {
+            ...targetList,
+            cardIds: [
+              ...(targetList?.cardIds || []).slice(0, insertIndex),
+              activeId,
+              ...(targetList?.cardIds || []).slice(insertIndex),
+            ],
+          },
         },
       }))
     }
@@ -118,26 +125,25 @@ export default function Board() {
 
   return (
     <div className="board">
-      {/* Board title */}
       {isEditing ? (
         <input
-          className="board-title-input"
           value={title}
+          className="board-title-input"
           onChange={(e) => setTitle(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={(e) => e.key === "Enter" && handleBlur()}
+          onBlur={() => {
+            updateBoardTitle(title)
+            setIsEditing(false)
+          }}
           autoFocus
         />
       ) : (
-        <h1 className="board-title" onClick={() => setIsEditing(true)}>
-          {title}
-        </h1>
+        <h1 className="board-title " onClick={() => setIsEditing(true)}>{title}</h1>
       )}
 
-      {/* Drag & drop root */}
       <DndContext
         sensors={sensors}
-        collisionDetection={pointerWithin}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
@@ -150,6 +156,15 @@ export default function Board() {
             ))}
           </div>
         </SortableContext>
+
+        {/* Smart overlay for smooth drag */}
+        <DragOverlay dropAnimation={{ duration: 200 }}>
+          {activeId
+            ? board.listIds.includes(activeId)
+              ? <List listId={activeId}  />
+              : <Card cardId={activeId} isOverlay />
+            : null}
+        </DragOverlay>
       </DndContext>
     </div>
   )
