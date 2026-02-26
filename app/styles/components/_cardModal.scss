@@ -1,0 +1,124 @@
+@use "../variables" as *;
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    .modal-content {
+        background: $white-custome;
+        border-radius: $radius-custome;
+        width: 90%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+        // Header
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid lighten($first-color, 10%);;
+
+            .modal-title {
+                margin: 0;
+                font-size: 1.5rem;
+            }
+
+            .modal-close-btn {
+                margin: 0;
+                padding: 0;
+                width: 40px;
+                height: 40px;
+                background: none;
+                border: none;
+                font-size: 2rem;
+                cursor: pointer;
+                background-color: darkred;
+                color: white;
+                opacity: 0.8;
+                transition: 0.2s;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+
+        // Comments section
+        .comments-title {
+            margin: 20px;
+            font-size: 1.1rem;
+            color: darken($black-custome, 10%);
+        }
+
+        .no-comments-yet {
+            color: lighten($black-custome, 10%);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .comments-list {
+            padding: 20px;
+
+            .comment-item {
+                margin-bottom: 10px;
+                padding: 10px;
+                background: lighten($second-color, 10%);
+                border-radius:  $radius-custome;
+
+                .comment-text {
+                    margin: 0;
+                    white-space: pre-wrap;
+                }
+            }
+        }
+
+        // Add comment form
+        .add-comment-form {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            padding: 20px;
+            border-top: 1px solid lighten($first-color, 10%);
+
+            .comment-input {
+                flex: 1;
+                padding: 15px ;
+                border: 1px solid lighten($black-custome, 10%);
+                border-radius: $radius-custome;
+                transition: 0.2s;
+
+                &:focus {
+                    border-color: $first-color;
+                    outline: none;
+                }
+            }
+
+            .add-comment-btn {
+                padding: 15px;
+                background: $first-color;
+                color: $white-custome;
+                border: none;
+                border-radius:$radius-custome;
+                cursor: pointer;
+                transition: 0.2s;
+
+                &:hover:not(:disabled) {
+                    background: lighten($first-color, 10%);
+                }
+
+                &:disabled {
+                    background: #ccc;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+}

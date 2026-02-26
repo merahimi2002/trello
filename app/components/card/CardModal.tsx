@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useBoardStore } from "@/app/store/board.store"
 import type { ID } from "@/app/types/board.types"
+import "@/app/styles/components/_cardModal.scss"
 
 interface CardModalProps {
   cardId: ID
@@ -12,56 +13,90 @@ interface CardModalProps {
 export default function CardModal({ cardId, close }: CardModalProps) {
   const card = useBoardStore((state) => state.cards[cardId])
   const addComment = useBoardStore((state) => state.addComment)
-  const updateCardTitle = useBoardStore((state) => state.updateCardTitle)
 
-  const [title, setTitle] = useState(card.title)
-  const [comment, setComment] = useState("")
+  const [commentText, setCommentText] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Auto-focus input when modal opens
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [])
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close()
+    }
+    window.addEventListener("keydown", handleEsc)
+    return () => window.removeEventListener("keydown", handleEsc)
+  }, [close])
 
   const handleAddComment = () => {
-    if (!comment.trim()) return
-    addComment(cardId, comment.trim()) 
-    setComment("")
+    if (!commentText.trim()) return
+
+    addComment(cardId, commentText.trim())
+    setCommentText("")
+
+    // Re-focus input after adding
+    inputRef.current?.focus()
   }
 
+  if (!card) return null
+
   return (
-    <div className="modal fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white p-4 rounded w-96">
-        <h2 className="font-bold text-lg mb-2">Edit Card</h2>
+    <div className="modal-overlay" onClick={close}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="modal-header">
+          <h2 className="modal-title">{card.title}</h2>
+          <button className="modal-close-btn" onClick={close}>
+            ×
+          </button>
+        </div>
 
-        <input
-          className="border p-1 w-full mb-2"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onBlur={() => updateCardTitle(cardId, title)}
-        />
+        {/* Comments Section */}
+        <div className="modal-comments-section">
+          <h3 className="comments-title">
+            Comments {card.comments.length > 0 && `(${card.comments.length})`}
+          </h3>
 
-        <h3 className="font-semibold mt-2">Comments</h3>
-        <ul className="max-h-40 overflow-y-auto mb-2">
-          {card.comments.map((c) => (
-            <li key={c.id} className="text-sm border-b py-1">{c.text}</li>
-          ))}
-        </ul>
+          {card.comments.length === 0 ? (
+            <p className="no-comments-yet">No comments yet. Be the first!</p>
+          ) : (
+            <div className="comments-list">
+              {card.comments.map((comment) => (
+                <div key={comment.id} className="comment-item">
+                  <p className="comment-text">{comment.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <input
-          className="border p-1 w-full mb-2"
-          placeholder="Add comment..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          onKeyDown={(e) => { if(e.key === "Enter") handleAddComment() }}
-        />
-
-        <div className="flex gap-2">
+        {/* Add Comment Form */}
+        <div className="add-comment-form">
+          <input
+            ref={inputRef}
+            type="text"
+            className="comment-input"
+            placeholder="Write a comment..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                handleAddComment()
+              }
+            }}
+          />
           <button
-            className="bg-blue-600 text-white px-2 py-1 rounded"
+            className="add-comment-btn"
             onClick={handleAddComment}
+            disabled={!commentText.trim()}
           >
             Add Comment
-          </button>
-          <button
-            className="bg-gray-400 text-white px-2 py-1 rounded"
-            onClick={close}
-          >
-            Close
           </button>
         </div>
       </div>
