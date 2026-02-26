@@ -52,30 +52,11 @@ styles → SCSS modules
 utils → Date formatter and helpers
 
 ⚙️ Installation
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+https://github.com/merahimi2002/trello.git
+
 npm install
 npm run dev
 
 App runs on:
 
 http://localhost:3000
-📸 Screenshots
-
-Add screenshots here (recommended for better presentation)
-
-🌍 Live Demo
-
-👉 View Live Demo
-
-💡 Future Improvements
-
-Edit card title & list title
-
-Drag between boards
-
-Dark mode
-
-Authentication
-
-Database persistence
