@@ -1,9 +1,16 @@
-import Board from "./components/board/Board";
+"use client"
+
+import { useEffect } from "react"
+import { useBoardStore } from "@/app/store/board.store"
+import { initialData } from "@/app/data/data"
+import Board from "@/app/components/board/Board"
 
 export default function Home() {
-  return (
-    <>
-      <Board/>
-    </>
-  );
+  const setBoardState = useBoardStore((state) => state.setInitialState)
+
+  useEffect(() => {
+    setBoardState(initialData)
+  }, [setBoardState])
+
+  return <Board />
 }

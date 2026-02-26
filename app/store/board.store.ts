@@ -15,6 +15,8 @@ interface BoardActions {
   removeCard: (listId: ID, cardId: ID) => void
 
   addComment: (cardId: ID, text: string) => void
+
+  setInitialState: (data: BoardState) => void
 }
 
 type Store = BoardState & BoardActions
@@ -140,6 +142,13 @@ export const useBoardStore = create<Store>()(
             },
           },
         })),
+
+      setInitialState: (data: BoardState) =>
+        set({
+          board: data.board,
+          lists: data.lists,
+          cards: data.cards,
+        }),
     }),
     {
       name: "trello-clone-storage",
